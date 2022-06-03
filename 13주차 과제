@@ -80,3 +80,76 @@ input('종료하려면 아무키나 누르세요')
 browser.quit()
 
 #학생 2('네이버'라는 사이트에서 출발지와 도착지를 입력하면 가격을 출력하는 크롤러를 크롤링)
+from selenium import webdriver
+from selenium.webdriver.common.keys import Keys
+import time
+
+driver = webdriver.Chrome()
+driver.get("https://flight.naver.com/")
+time.sleep(1)
+
+def airway(parts):
+    for part in parts:
+        index = parts.index(part)
+        driver.find_element_by_xpath(f'//*[@id="__next"]/div/div[1]/div[4]/div/div/div[2]/div[1]/button[{int(index)+1}]').click()
+        driver.find_element_by_xpath('//*[@id="__next"]/div/div[1]/div[9]/div[1]/div/input').send_keys(part)
+        time.sleep(0.1)
+        driver.find_element_by_xpath('//*[@id="__next"]/div/div[1]/div[9]/div[2]/section/div').click()
+        time.sleep(0.5)
+def select_dates(month, week, day):
+    print(f"week 번호 : {week}   요일 번호 : {day}")
+    driver.find_element_by_xpath(f'//*[@id="__next"]/div/div[1]/div[9]/div[2]/div[1]/div[2]/div/div[{month}]/table/tbody/tr[{week}]/td[{day}]/button/b').click()
+    time.sleep(0.1)
+
+ports = {'김포':'GMP','인천':'ICN','제주':'CJU','김해':'PUS','대구':'TAE'}
+points = [ports['김포'],ports['제주']]
+print(points)
+airway(points)
+
+driver.find_element_by_xpath('//*[@id="__next"]/div/div[1]/div[4]/div/div/div[2]/div[2]/button[1]').click()
+time.sleep(1)
+
+month = 2
+week = 3
+day_go = '토요일'
+day_n_nights = 4
+
+days = ['일요일', '월요일', '화요일', '수요일', '목요일', '금요일', '토요일']
+day = days.index(day_go)+1      
+select_dates(month, week, day)  
+day = day+day_n_nights-1       
+
+if day > 7:
+    week+=day//7
+    day = day%7
+try:
+    select_dates(month, week, day)
+except:
+    if week >= 4:
+        month += 1
+        week = 1
+        select_dates(month, week, day)
+
+
+driver.find_element_by_xpath('//*[@id="__next"]/div/div[1]/div[4]/div/div/button').click()
+
+delay = 10
+for i in range(delay):
+    time.sleep(1)
+    print(f'{delay-i}초 후 실행됩니다.')
+
+from bs4 import BeautifulSoup as bs
+
+
+for i in range(10):
+    driver.execute_script("window.scrollTo(0, document.body.scrollHeight)")
+    time.sleep(0.2)
+
+page_url = driver.page_source
+soup = bs(page_url, "html.parser")
+flights = soup.find_all(class_='result')
+
+for flight in flights:
+    print(flight.text)
+
+print(f'총 {len(flights)}개의 항공권 정보를 불러왔습니다.')
