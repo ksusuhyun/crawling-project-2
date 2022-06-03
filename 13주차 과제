@@ -1,0 +1,82 @@
+# 학생1('네이버'라는 사이트에서 출발지와 도착지를 입력하면 예매 정보를 출력하는 크롤러를 크롤링)
+from selenium import webdriver
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.webdriver.common.by import By
+from datetime import date
+import openpyxl
+
+def wait_until(xpath_str):
+    WebDriverWait(browser,30).until(EC.presence_of_element_located
+    ((By.XPATH,xpath_str)))
+
+browser=webdriver.Chrome()
+url='https://flight.naver.com/'
+browser.get(url)
+
+begin_date=browser.find_element(By.XPATH, '//button[text()="가는 날"]')
+begin_date.click()
+
+
+now=date.today().month
+count=9-now
+
+wait_until('//b[text()="8"]')
+day8=browser.find_elements(By.XPATH, '//b[text()="8"]')
+day8[count].click()
+
+
+wait_until('//b[text()="16"]')
+day16=browser.find_elements(By.XPATH, '//b[text()="16"]')
+day16[count].click()
+
+
+wait_until('//b[text()="도착"]')
+arrival=browser.find_element(By.XPATH, '//b[text()="도착"]')
+arrival.click()
+
+wait_until('//button[text()="유럽"]')
+europe=browser.find_element(By.XPATH, '//button[text()="유럽"]')
+europe.click()
+
+wait_until('//i[text()="샤를드골국제공항"]')
+CDG=browser.find_element(By.XPATH, '//i[text()="샤를드골국제공항"]')
+CDG.click()
+
+
+
+wait_until('//button[text()="직항만"]')
+direct=browser.find_element(By.XPATH, '//button[text()="직항만"]')
+direct.click()
+
+
+
+wait_until('//span[text()="항공권 검색"]')
+search=browser.find_element(By.XPATH, '//span[text()="항공권 검색"]')
+search.click()
+
+wait_until('//div[@class="concurrent_ConcurrentItemContainer__2lQVG result"]')
+element=browser.find_elements(By.XPATH, ('//div[@class="concurrent_ConcurrentItemContainer__2lQVG result"]'))
+
+
+wb=openpyxl.Workbook()
+sheet=wb.active
+sheet.append(["항공사","출발시간","도착시간","직항여부","비행시간","항공사","출발시간","도착시간","직항여부","비행시간"])
+
+
+r=1
+c=0
+for e in element:
+    e1=e.text.splitlines()
+    r+=1
+    c=0
+    for t in e1:
+        c+=1
+        sheet.cell(row=r,column=c).value=t
+        print(t)
+
+wb.save("data.csv")
+input('종료하려면 아무키나 누르세요')
+browser.quit()
+
+#학생 2('네이버'라는 사이트에서 출발지와 도착지를 입력하면 가격을 출력하는 크롤러를 크롤링)
